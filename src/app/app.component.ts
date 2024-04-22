@@ -1,25 +1,18 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Component } from '@angular/core';
 
-import { HomeComponent } from './home';
-import { AuthGuard } from './_helpers';
-import { Role } from './_models';
+import { AccountService } from './_services';
+import { Account, Role } from './_models';
 
-const accountModule = () => import('./account/account.module').then(x => x.AccountModule);
-const adminModule = () => import('./admin/admin.module').then(x => x.AdminModule);
-const profileModule = () => import('./profile/profile.module').then(x => x.ProfileModule);
+@Component({ selector: 'app', templateUrl: 'app.component.html' })
+export class AppComponent {
+    Role = Role;
+    account: Account;
 
-const routes: Routes = [
-    { path: '', component: HomeComponent, canActivate: [AuthGuard] },
-    { path: 'account', loadChildren: accountModule },
-    { path: 'profile', loadChildren: profileModule, canActivate: [AuthGuard] },
-    { path: 'admin', loadChildren: adminModule, canActivate: [AuthGuard], data: { roles: [Role.Admin] } },
+    constructor(private accountService: AccountService) {
+        this.accountService.account.subscribe(x => this.account = x);
+    }
 
-    { path: '**', redirectTo: '' }
-];
-
-@NgModule({
-    imports: [RouterModule.forRoot(routes)],
-    exports: [RouterModule]
-})
-export class AppRoutingModule { }
+    logout() {
+        this.accountService.logout();
+    }
+}

@@ -1,36 +1,26 @@
-import { NgModule, APP_INITIALIZER } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
 
-import { fakeBackendProvider } from './_helpers';
-
-import { AppRoutingModule } from './app-routing.module';
-import { JwtInterceptor, ErrorInterceptor, appInitializer } from './_helpers';
-import { AccountService } from './_services';
-import { AppComponent } from './app.component';
-import { AlertComponent } from './_components';
 import { HomeComponent } from './home';
+import { AuthGuard } from './_helpers';
+import { Role } from './_models';
+
+const accountModule = () => import('./account/account.module').then(x => x.AccountModule);
+const adminModule = () => import('./admin/admin.module').then(x => x.AdminModule);
+const profileModule = () => import('./profile/profile.module').then(x => x.ProfileModule);
+
+const routes: Routes = [
+    { path: '', component: HomeComponent, canActivate: [AuthGuard] },
+    { path: 'account', loadChildren: accountModule },
+    { path: 'profile', loadChildren: profileModule, canActivate: [AuthGuard] },
+    { path: 'admin', loadChildren: adminModule, canActivate: [AuthGuard], data: { roles: [Role.Admin] } },
+
+    // otherwise redirect to home
+    { path: '**', redirectTo: '' }
+];
 
 @NgModule({
-    imports: [
-        BrowserModule,
-        ReactiveFormsModule,
-        HttpClientModule,
-        AppRoutingModule
-    ],
-    declarations: [
-        AppComponent,
-        AlertComponent,
-        HomeComponent
-    ],
-    providers: [
-        { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },
-        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-
-        fakeBackendProvider
-    ],
-    bootstrap: [AppComponent]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
 })
-export class AppModule { }
+export class AppRoutingModule { }

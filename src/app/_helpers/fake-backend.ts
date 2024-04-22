@@ -52,6 +52,7 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             }    
         }
 
+
         function authenticate() {
             const { email, password } = body;
             const account = accounts.find(x => x.email === email && x.password === password && x.isVerified);
@@ -103,7 +104,6 @@ export class FakeBackendInterceptor implements HttpInterceptor {
             const account = body;
 
             if (accounts.find(x => x.email === account.email)) {
-
                 setTimeout(() => {
                     alertService.info(`
                         <h4>Email Already Registered</h4>
